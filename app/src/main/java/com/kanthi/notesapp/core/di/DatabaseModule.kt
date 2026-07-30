@@ -3,6 +3,7 @@ package com.kanthi.notesapp.core.di
 import android.content.Context
 import androidx.room.Room
 import com.kanthi.notesapp.core.data.local.NotesDatabase
+import com.kanthi.notesapp.feature.auth.data.local.dao.UserDao
 import com.kanthi.notesapp.feature.notes.data.local.dao.NoteDao
 import dagger.Module
 import dagger.Provides
@@ -17,8 +18,13 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideNotesDatabase(@ApplicationContext context: Context): NotesDatabase =
-        Room.databaseBuilder(context, NotesDatabase::class.java, "notes.db").build()
+        Room.databaseBuilder(context, NotesDatabase::class.java, "notes.db")
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
 
     @Provides
     fun provideNoteDao(database: NotesDatabase): NoteDao = database.noteDao()
+
+    @Provides
+    fun provideUserDao(database: NotesDatabase): UserDao = database.userDao()
 }

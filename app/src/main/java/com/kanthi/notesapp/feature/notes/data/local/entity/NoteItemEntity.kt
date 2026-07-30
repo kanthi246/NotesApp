@@ -9,5 +9,6 @@ data class NoteItemEntity(
     val title: String,
     val description: String,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val pinned: Boolean = false
 )

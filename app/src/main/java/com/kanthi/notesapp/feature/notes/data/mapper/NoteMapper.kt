@@ -5,10 +5,10 @@ import com.kanthi.notesapp.feature.notes.domain.model.NoteItem
 
 fun NoteItemEntity.toDomain(): NoteItem = NoteItem(
     id = id, title = title, description = description,
-    createdAt = createdAt, updatedAt = updatedAt
+    createdAt = createdAt, updatedAt = updatedAt, pinned = pinned
 )
 
 fun NoteItem.toEntity(): NoteItemEntity = NoteItemEntity(
     id = id, title = title, description = description,
-    createdAt = createdAt, updatedAt = updatedAt
+    createdAt = createdAt, updatedAt = updatedAt, pinned = pinned
 )
