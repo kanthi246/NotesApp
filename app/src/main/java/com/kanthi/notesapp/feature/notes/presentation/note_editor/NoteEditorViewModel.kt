@@ -23,6 +23,7 @@ class NoteEditorViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val noteId: Long? = savedStateHandle.get<Long>("noteId")?.takeIf { it != -1L }
+    private var originalNote: NoteItem? = null
 
     private val _uiState = MutableStateFlow(NoteEditorUiState(noteId = noteId))
     val uiState: StateFlow<NoteEditorUiState> = _uiState.asStateFlow()
@@ -35,6 +36,7 @@ class NoteEditorViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             val note = getNoteByIdUseCase(id)
+            originalNote = note
             note?.let { found ->
                 _uiState.update {
                     it.copy(title = found.title, description = found.description)
@@ -54,13 +56,16 @@ class NoteEditorViewModel @Inject constructor(
     fun saveNote() {
         viewModelScope.launch {
             val current = _uiState.value
+            val existing = originalNote
             val note = NoteItem(
                 id = current.noteId ?: 0L,
                 title = current.title,
-                description = current.description
+                description = current.description,
+                createdAt = existing?.createdAt ?: System.currentTimeMillis(),
+                pinned = existing?.pinned ?: false
             )
-            when (saveNoteUseCase(note)) {
-                is SaveNoteResult.Success -> _uiState.update { it.copy(isSaved = true) }
+            when (val result = saveNoteUseCase(note)) {
+                is SaveNoteResult.Success -> _uiState.update { it.copy(savedNoteId = result.noteId) }
                 is SaveNoteResult.Error -> _uiState.update { it.copy(errorMessage = "Note can't be empty") }
             }
         }

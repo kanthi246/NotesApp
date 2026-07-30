@@ -5,6 +5,6 @@ data class NoteEditorUiState(
     var title: String = "",
     var description: String = "",
     val isLoading: Boolean = false,
-    val isSaved: Boolean = false,
+    val savedNoteId: Long? = null,
     val errorMessage: String? = null
 )
