@@ -1,0 +1,73 @@
+package com.kanthi.notesapp.feature.notes.presentation.note_editor
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kanthi.notesapp.feature.notes.domain.model.NoteItem
+import com.kanthi.notesapp.feature.notes.domain.model.SaveNoteResult
+import com.kanthi.notesapp.feature.notes.domain.usecase.GetNoteByIdUseCase
+import com.kanthi.notesapp.feature.notes.domain.usecase.SaveNoteUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class NoteEditorViewModel @Inject constructor(
+    private val getNoteByIdUseCase: GetNoteByIdUseCase,
+    private val saveNoteUseCase: SaveNoteUseCase,
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    private val noteId: Long? = savedStateHandle.get<Long>("noteId")?.takeIf { it != -1L }
+    private var originalNote: NoteItem? = null
+
+    private val _uiState = MutableStateFlow(NoteEditorUiState(noteId = noteId))
+    val uiState: StateFlow<NoteEditorUiState> = _uiState.asStateFlow()
+
+    init {
+        noteId?.let { loadNote(it) }
+    }
+
+    private fun loadNote(id: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val note = getNoteByIdUseCase(id)
+            originalNote = note
+            note?.let { found ->
+                _uiState.update {
+                    it.copy(title = found.title, description = found.description)
+                }
+            }
+        }
+    }
+
+    fun onTitleChange(newTitle: String) {
+        _uiState.update { it.copy(title = newTitle) }
+    }
+
+    fun onDescriptionChange(newDescription: String) {
+        _uiState.update { it.copy(description = newDescription) }
+    }
+
+    fun saveNote() {
+        viewModelScope.launch {
+            val current = _uiState.value
+            val existing = originalNote
+            val note = NoteItem(
+                id = current.noteId ?: 0L,
+                title = current.title,
+                description = current.description,
+                createdAt = existing?.createdAt ?: System.currentTimeMillis(),
+                pinned = existing?.pinned ?: false
+            )
+            when (val result = saveNoteUseCase(note)) {
+                is SaveNoteResult.Success -> _uiState.update { it.copy(savedNoteId = result.noteId) }
+                is SaveNoteResult.Error -> _uiState.update { it.copy(errorMessage = "Note can't be empty") }
+            }
+        }
+    }
+}
