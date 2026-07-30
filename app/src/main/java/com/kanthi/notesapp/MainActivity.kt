@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.kanthi.notesapp.domain.model.NoteItem
-import com.kanthi.notesapp.presentation.noteslist.NoteListScreen
-import com.kanthi.notesapp.presentation.common.components.NoteCard
+import com.kanthi.notesapp.feature.notes.domain.model.NoteItem
+import com.kanthi.notesapp.feature.notes.presentation.notes_list.NoteListScreen
+import com.kanthi.notesapp.feature.notes.presentation.notes_list.components.NoteCard
 import com.kanthi.notesapp.ui.theme.NotesAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
