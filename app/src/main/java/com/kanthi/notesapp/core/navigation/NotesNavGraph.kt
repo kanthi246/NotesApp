@@ -90,13 +90,14 @@ fun NotesNavGraph(navController: NavHostController = rememberNavController()) {
         composable(
             route = Routes.NOTE_EDITOR,
             arguments = listOf(navArgument("noteId") { type = NavType.LongType; defaultValue = -1L })
-        ) {
+        ) { backStackEntry ->
+            val openedForExistingNote = backStackEntry.arguments?.getLong("noteId")?.takeIf { it != -1L }
             EditorNotesScreen(
                 onCancel = { navController.popBackStack() },
                 onSaved = { savedId ->
-                    navController.navigate(Routes.noteDetail(savedId)) {
-                        popUpTo(Routes.NOTE_EDITOR) { inclusive = true }
-                        launchSingleTop = true
+                    navController.popBackStack()
+                    if (openedForExistingNote == null) {
+                        navController.navigate(Routes.noteDetail(savedId))
                     }
                 }
             )
